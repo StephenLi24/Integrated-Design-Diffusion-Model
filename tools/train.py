@@ -224,12 +224,16 @@ def train(rank=None, args=None):
             time = diffusion.sample_time_steps(images.shape[0]).to(device)
             # Add noise, return as x value at time t and standard normal distribution
             x_time, noise = diffusion.noise_images(x=images, time=time) 
+
+            if args.disentangle == True:
+            # disentangle calculate
             # initial first time previous_noise
-            if previous_noise == None:
+                if previous_noise == None:
+                    previous_noise = noise
+                disentangle_offset, _ = diffusion.disentanglement_offset(previous_noise, 1)
+                noise = disentangle_offset + noise
                 previous_noise = noise
-            disentangle_offset, _ = diffusion.disentanglement_offset(previous_noise, 1)
-            noise = disentangle_offset + noise
-            previous_noise = noise
+
             # Enable Automatic mixed precision training
             # Automatic mixed precision training
             # Note: If your Pytorch version > 2.4.1, with torch.amp.autocast("cuda", enabled=amp):
@@ -444,6 +448,8 @@ def init_train_args():
     # classifier-free guidance interpolation weight, users can better generate model effect (recommend)
     parser.add_argument("--cfg_scale", type=int, default=3)
 
+    # =====================Enable the disentanglement training ==============================
+    parser.add_argument("--disentangle", type=bool, default = False)
     return parser.parse_args()
 
 
