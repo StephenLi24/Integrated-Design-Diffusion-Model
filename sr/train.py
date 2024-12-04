@@ -266,7 +266,7 @@ def train(rank=None, args=None):
             ckpt_ema_model = ema_model.state_dict()
             ckpt_optimizer = optimizer.state_dict()
             # Save checkpoint
-            save_ckpt(epoch=epoch, save_name=save_name, ckpt_model=ckpt_model, ckpt_ema_model=ckpt_ema_model,
+            save_ckpt(epoch=epoch, save_name=save_name, ckpt_model=ckpt_model, ckpt_ema_model=ckpt_ema_model,save_model_interval_epochs=10,
                       ckpt_optimizer=ckpt_optimizer, results_dir=results_dir, save_model_interval=save_model_interval,
                       start_model_interval=start_model_interval, image_size=image_size, network=network, act=act)
         logger.info(msg=f"[{device}]: Finish epoch {epoch}:")
@@ -325,9 +325,9 @@ if __name__ == "__main__":
     # Unconditional dataset
     # All images are placed in a single folder, and the path represents the image folder.
     parser.add_argument("--train_dataset_path", type=str,
-                        default="/your/path/Diffusion-Model/datasets/dir/train")
+                        default="/home/llb/Integrated-Design-Diffusion-Model/datasets/cifar10_folder/train/horse")
     parser.add_argument("--val_dataset_path", type=str,
-                        default="/your/path/Diffusion-Model/datasets/dir/val")
+                        default="/home/llb/Integrated-Design-Diffusion-Model/datasets/cifar10_folder/test/horse")
     # Enable automatic mixed precision training (needed)
     # Effectively reducing GPU memory usage may lead to lower training accuracy and results.
     parser.add_argument("--amp", default=False, action="store_true")
@@ -346,7 +346,7 @@ if __name__ == "__main__":
     # Option: linear/cosine/warmup_cosine
     parser.add_argument("--lr_func", type=str, default="cosine")
     # Saving path (required)
-    parser.add_argument("--result_path", type=str, default="/your/path/Diffusion-Model/results")
+    parser.add_argument("--result_path", type=str, default="/home/llb/Integrated-Design-Diffusion-Model/results")
     # Whether to save weight each training (recommend)
     parser.add_argument("--save_model_interval", default=False, action="store_true")
     # Start epoch for saving models (needed)

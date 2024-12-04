@@ -211,13 +211,25 @@ def train(rank=None, args=None):
         pbar = tqdm(dataloader)
         # Initialize images and labels
         images, labels, loss_list = None, None, []
+        # Initialize former step noise
+        previous_noise = None
         for i, (images, labels) in enumerate(pbar):
             # The images are all resized in dataloader
             images = images.to(device)
+            # print("images.shape = ", images.shape)   (16, 3, 32, 32) 
+            # save the former step noise
+            previous_noise = torch.zeros_like(images)
+            previous_noise.to(device)
             # Generates a tensor of size images.shape[0] randomly sampled time steps
             time = diffusion.sample_time_steps(images.shape[0]).to(device)
             # Add noise, return as x value at time t and standard normal distribution
-            x_time, noise = diffusion.noise_images(x=images, time=time)
+            x_time, noise = diffusion.noise_images(x=images, time=time) 
+            # initial first time previous_noise
+            if previous_noise == None:
+                previous_noise = noise
+            disentangle_offset, _ = diffusion.disentanglement_offset(previous_noise, 1)
+            noise = disentangle_offset + noise
+            previous_noise = noise
             # Enable Automatic mixed precision training
             # Automatic mixed precision training
             # Note: If your Pytorch version > 2.4.1, with torch.amp.autocast("cuda", enabled=amp):
@@ -360,7 +372,7 @@ if __name__ == "__main__":
     # e.g: cifar10, Each category is stored in a separate folder, and the main folder represents the path.
     # Unconditional dataset
     # All images are placed in a single folder, and the path represents the image folder.
-    parser.add_argument("--dataset_path", type=str, default="/your/path/Defect-Diffusion-Model/datasets/dir")
+    parser.add_argument("--dataset_path", type=str, default="/home/llb/Integrated-Design-Diffusion-Model/datasets/cifar10_folder/train")
     # Enable automatic mixed precision training (needed)
     # Effectively reducing GPU memory usage may lead to lower training accuracy and results.
     parser.add_argument("--amp", default=False, action="store_true")
@@ -379,7 +391,7 @@ if __name__ == "__main__":
     # Option: linear/cosine/warmup_cosine
     parser.add_argument("--lr_func", type=str, default="linear", choices=lr_func_choices)
     # Saving path (required)
-    parser.add_argument("--result_path", type=str, default="/your/path/Defect-Diffusion-Model/results")
+    parser.add_argument("--result_path", type=str, default="/home/llb/Integrated-Design-Diffusion-Model/results")
     # Whether to save weight in training (recommend)
     # If false, only save the last one.
     parser.add_argument("--save_model_interval", default=False, action="store_true")

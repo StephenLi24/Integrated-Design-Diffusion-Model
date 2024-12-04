@@ -24,8 +24,11 @@ def run_fid_command(generated_image_folder, dataset_image_folder, dim=2048):
 
 
 # Modify your path to dataset images folder and generated images folder.
-generated_image_folder = 'path_to_generated_image_folder'
-dataset_image_folder = 'path_to_dataset_image_folder'
+# generated_image_folder = 'path_to_generated_image_folder'
+# dataset_image_folder = 'path_to_dataset_image_folder'
+generated_image_folder = '/home/llb/Integrated-Design-Diffusion-Model/results/cifar_exp1/vis/299'
+dataset_image_folder = '/home/llb/Integrated-Design-Diffusion-Model/datasets/cifar10_folder/train/horse'
+
 
 
 # dimensions options: 768/ 2048

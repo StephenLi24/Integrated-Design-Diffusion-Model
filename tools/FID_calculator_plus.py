@@ -28,6 +28,7 @@ def main(args):
     device_id = args.use_gpu
     paths = args.path
     batch_size = args.batch_size
+    # print('batch_size =', batch_size)
     num_workers = args.num_workers
     dims = args.dims
     device = device_initializer(device_id=device_id)
@@ -35,6 +36,7 @@ def main(args):
     # Compute fid
     if args.save_stats:
         save_fid_stats(paths=paths, batch_size=batch_size, device=device, dims=dims, num_workers=num_workers)
+        # print('111111111111111111++++++++++++++++++++++++++')
         return
 
     fid_value = calculate_fid_given_paths(paths=paths, batch_size=batch_size, device=device, dims=dims,
@@ -49,9 +51,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     # Function1: Generated image folder and dataset image folder
     # Function2: Save stats input path and output path (use `--save_stats`)
+    # parser.add_argument("path", type=str, nargs="*",
+    #                     default=["/your/generated/image/folder/or/stats/input/path",
+    #                              "/your/dataset/image/folder/or/stats/output/path"],
+    #                     help="Paths to the generated images or to .npz statistic files")
     parser.add_argument("path", type=str, nargs="*",
-                        default=["/your/generated/image/folder/or/stats/input/path",
-                                 "/your/dataset/image/folder/or/stats/output/path"],
+                        default=["/home/llb/Integrated-Design-Diffusion-Model/results/cifar_exp1/vis/299",
+                                    "/home/llb/Integrated-Design-Diffusion-Model/datasets/cifar10_folder/train/horse"],
                         help="Paths to the generated images or to .npz statistic files")
     # Batch size
     parser.add_argument("--batch_size", type=int, default=8,

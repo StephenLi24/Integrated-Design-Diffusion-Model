@@ -108,6 +108,36 @@ class BaseDiffusion:
         Ɛ = torch.randn_like(x)
         return sqrt_alpha_hat * x + sqrt_one_minus_alpha_hat * Ɛ, Ɛ
 
+    def disentanglement_offset(self, previous_noise, beta_step):
+        """
+        Calculate disentangle offset based on previous noise and beta step
+        :param previous_noise: The noise from the previous timestep
+        :param beta_step: The step size used for noise adjustment
+        :return: Updated noise offset
+        """
+         # 1.previous_noise (batch_size, channels, height, width)）
+        perturbed_noise = previous_noise.clone().reshape(previous_noise.shape[0], 
+                                                        previous_noise.shape[1] * previous_noise.shape[2] * previous_noise.shape[3]).permute(1, 0)
+        
+        # 2. cal grad of previous_noise
+        perturbed_noise.requires_grad_(True)
+
+        # 3. cal coefficiency
+        corr = torch.sum(torch.abs(torch.triu(torch.corrcoef(perturbed_noise), diagonal=1)))
+
+        corr.backward()
+
+        # 5. get backward
+        grad = perturbed_noise.grad.clone()
+
+        perturbed_noise.requires_grad_(False)
+
+        # 7. update disentanglement_offset
+        perturbed_noise = perturbed_noise - grad * beta_step
+
+        # 8. return disentangled offset
+        return perturbed_noise.permute(1, 0).reshape(previous_noise.shape[0], previous_noise.shape[1], previous_noise.shape[2], previous_noise.shape[3]), grad.permute(1, 0).reshape(previous_noise.shape[0], previous_noise.shape[1], previous_noise.shape[2], previous_noise.shape[3]) * beta_step
+
     def sample_time_steps(self, n):
         """
         Sample time steps
