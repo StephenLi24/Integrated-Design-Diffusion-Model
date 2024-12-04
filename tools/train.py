@@ -224,15 +224,18 @@ def train(rank=None, args=None):
             time = diffusion.sample_time_steps(images.shape[0]).to(device)
             # Add noise, return as x value at time t and standard normal distribution
             x_time, noise = diffusion.noise_images(x=images, time=time) 
-
-            if args.disentangle == True:
-            # disentangle calculate
-            # initial first time previous_noise
+            print(x_time.shape)
+            # print('x_time =', x_time)
+            if args.disentangle:
+                # disentangle calculate
+                # initial first time previous_noise
                 if previous_noise == None:
-                    previous_noise = noise
-                disentangle_offset, _ = diffusion.disentanglement_offset(previous_noise, 1)
-                noise = disentangle_offset + noise
-                previous_noise = noise
+                    previous_noise = x_time
+                # print('previous noise =', previous_noise)
+                disentangle_offset = diffusion.disentanglement_offset(previous_noise= previous_noise, beta_step = 1)
+                # print('disentangle offset =', disentangle_offset)
+                x_time = disentangle_offset + x_time
+                previous_noise = x_time
 
             # Enable Automatic mixed precision training
             # Automatic mixed precision training
@@ -449,7 +452,7 @@ def init_train_args():
     parser.add_argument("--cfg_scale", type=int, default=3)
 
     # =====================Enable the disentanglement training ==============================
-    parser.add_argument("--disentangle", type=bool, default = False)
+    parser.add_argument("--disentangle", action='store_true', default=False)
     return parser.parse_args()
 
 

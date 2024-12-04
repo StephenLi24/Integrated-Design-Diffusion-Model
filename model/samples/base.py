@@ -110,34 +110,44 @@ class BaseDiffusion:
 
     def disentanglement_offset(self, previous_noise, beta_step):
         """
-        Calculate disentangle offset based on previous noise and beta step
-        :param previous_noise: The noise from the previous timestep
-        :param beta_step: The step size used for noise adjustment
-        :return: Updated noise offset
+        Introduce a disentanglement offset during the forward process in diffusion.
+
+        Args:
+            previous_noise (torch.Tensor): The input noise tensor of shape (batch_size, channel, img_height, img_width).
+            beta_step (float): Scaling factor for the offset.
+
+        Returns:
+            torch.Tensor: The adjusted noise tensor with the disentanglement offset applied.
         """
-         # 1.previous_noise (batch_size, channels, height, width)）
-        perturbed_noise = previous_noise.clone().reshape(previous_noise.shape[0], 
-                                                        previous_noise.shape[1] * previous_noise.shape[2] * previous_noise.shape[3]).permute(1, 0)
-        
-        # 2. cal grad of previous_noise
-        perturbed_noise.requires_grad_(True)
+        # Get the batch size, channels, height, and width
+        batch_size, channels, height, width = previous_noise.shape
 
-        # 3. cal coefficiency
-        corr = torch.sum(torch.abs(torch.triu(torch.corrcoef(perturbed_noise), diagonal=1)))
+        # Flatten the spatial dimensions (height, width) to create features
+        flattened_noise = previous_noise.view(batch_size, channels, -1)  # Shape: (batch_size, channels, num_pixels)
 
-        corr.backward()
+        # Normalize each vector in the batch to have unit norm
+        flattened_noise = flattened_noise.view(batch_size, -1)  # Flatten to (batch_size, channels * num_pixels)
+        normalized_noise = torch.nn.functional.normalize(flattened_noise, p=2, dim=1)  # Shape: (batch_size, channels * num_pixels)
 
-        # 5. get backward
-        grad = perturbed_noise.grad.clone()
+        # Compute pairwise cosine similarities
+        cosine_similarities = torch.mm(normalized_noise, normalized_noise.T)  # Shape: (batch_size, batch_size)
 
-        perturbed_noise.requires_grad_(False)
+        # Remove diagonal elements (self-similarities) to compute D
+        mask = torch.eye(cosine_similarities.size(0), device=cosine_similarities.device).bool()
+        cosine_similarities = cosine_similarities.masked_fill(mask, 0)
 
-        # 7. update disentanglement_offset
-        perturbed_noise = perturbed_noise - grad * beta_step
+        # Compute the sum of off-diagonal elements (D)
+        disentanglement_offset = torch.sum(cosine_similarities, dim=1, keepdim=True)  # Shape: (batch_size, 1)
 
-        # 8. return disentangled offset
-        return perturbed_noise.permute(1, 0).reshape(previous_noise.shape[0], previous_noise.shape[1], previous_noise.shape[2], previous_noise.shape[3]), grad.permute(1, 0).reshape(previous_noise.shape[0], previous_noise.shape[1], previous_noise.shape[2], previous_noise.shape[3]) * beta_step
+        # Scale the disentanglement offset with beta_step
+        disentanglement_offset *= beta_step
 
+        # Reshape the disentanglement offset to match the spatial dimensions
+        disentanglement_offset = disentanglement_offset.view(batch_size, 1, 1, 1)  # Shape: (batch_size, 1, 1, 1)
+        disentanglement_offset = disentanglement_offset.expand(-1, channels, height, width)  # Shape: (batch_size, channels, height, width)
+        # print('disentanglement_offset.shape', disentanglement_offset.shape)
+
+        return disentanglement_offset
     def sample_time_steps(self, n):
         """
         Sample time steps
