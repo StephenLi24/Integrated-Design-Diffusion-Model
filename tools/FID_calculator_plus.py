@@ -36,9 +36,8 @@ def main(args):
     # Compute fid
     if args.save_stats:
         save_fid_stats(paths=paths, batch_size=batch_size, device=device, dims=dims, num_workers=num_workers)
-        # print('111111111111111111++++++++++++++++++++++++++')
         return
-
+    # print('batch_size is ', batch_size)
     fid_value = calculate_fid_given_paths(paths=paths, batch_size=batch_size, device=device, dims=dims,
                                           num_workers=num_workers)
 
@@ -56,14 +55,14 @@ if __name__ == "__main__":
     #                              "/your/dataset/image/folder/or/stats/output/path"],
     #                     help="Paths to the generated images or to .npz statistic files")
     parser.add_argument("path", type=str, nargs="*",
-                        default=["/home/llb/Integrated-Design-Diffusion-Model/results/cifar_exp1/vis/299",
-                                    "/home/llb/Integrated-Design-Diffusion-Model/datasets/cifar10_folder/train/horse"],
+                        default=["/home/llb/Integrated-Design-Diffusion-Model/results/cifar_horse_1/vis/1733383171.1157386/",
+                                    "/home/llb/Integrated-Design-Diffusion-Model/datasets/cifar10_folder/train/horse/"],
                         help="Paths to the generated images or to .npz statistic files")
     # Batch size
-    parser.add_argument("--batch_size", type=int, default=8,
+    parser.add_argument("--batch_size", type=int, default=16,
                         help="Batch size for calculation.")
     # Number of workers
-    parser.add_argument("--num-workers", type=int, default=0)
+    parser.add_argument("--num-workers", type=int, default=1)
     # Dimensionality of Inception features to use
     # Option: 64/192/768/2048
     parser.add_argument("--dims", type=int, default=2048,

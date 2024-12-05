@@ -133,11 +133,11 @@ def init_generate_args():
     parser = argparse.ArgumentParser()
     # =================================Base settings=================================
     # Generation name (required)
-    parser.add_argument("--generate_name", type=str, default="df")
+    parser.add_argument("--generate_name", type=str, default="disentangle1")
     # Input image size (required)
     # [Warn] Compatible with older versions
     # [Warn] Version <= 1.1.1 need to be equal to model's image size, version > 1.1.1 can set whatever you want
-    parser.add_argument("--image_size", type=parse_image_size_type, default=64)
+    parser.add_argument("--image_size", type=parse_image_size_type, default=32)
     # Generated image format
     # Recommend to use png for better generation quality.
     # Option: jpg/png
@@ -150,9 +150,9 @@ def init_generate_args():
     # If true, the pt file of the ema model will be used
     parser.add_argument("--use_ema", default=False, action="store_true")
     # Weight path (required)
-    parser.add_argument("--weight_path", type=str, default="/your/path/Defect-Diffusion-Model/weight/model.pt")
+    parser.add_argument("--weight_path", type=str, default="/home/llb/Integrated-Design-Diffusion-Model/results/cifar_horse_1/ckpt_last.pt")
     # Saving path (required)
-    parser.add_argument("--result_path", type=str, default="/your/path/Defect-Diffusion-Model/results/vis")
+    parser.add_argument("--result_path", type=str, default="/home/llb/Integrated-Design-Diffusion-Model/results/cifar_horse_1/vis")
     # Set the sample type (required)
     # If not set, the default is for 'ddpm'. You can set it to either 'ddpm', 'ddim' or 'plms'.
     # Option: ddpm/ddim/plms

@@ -379,7 +379,7 @@ def init_train_args():
     # e.g: cifar10, Each category is stored in a separate folder, and the main folder represents the path.
     # Unconditional dataset
     # All images are placed in a single folder, and the path represents the image folder.
-    parser.add_argument("--dataset_path", type=str, default="/home/llb/Integrated-Design-Diffusion-Model/datasets/cifar10_folder/train")
+    parser.add_argument("--dataset_path", type=str, default="/home/llb/Integrated-Design-Diffusion-Model/datasets/cifar10_folder/train/")
     # Enable automatic mixed precision training (needed)
     # Effectively reducing GPU memory usage may lead to lower training accuracy and results.
     parser.add_argument("--amp", default=False, action="store_true")
