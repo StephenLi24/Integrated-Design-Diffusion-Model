@@ -224,7 +224,7 @@ def train(rank=None, args=None):
             time = diffusion.sample_time_steps(images.shape[0]).to(device)
             # Add noise, return as x value at time t and standard normal distribution
             x_time, noise = diffusion.noise_images(x=images, time=time) 
-            print(x_time.shape)
+            # print(x_time.shape)
             # print('x_time =', x_time)
             if args.disentangle:
                 # disentangle calculate

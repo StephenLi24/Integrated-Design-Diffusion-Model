@@ -136,7 +136,7 @@ class BaseDiffusion:
         mask = torch.eye(cosine_similarities.size(0), device=cosine_similarities.device).bool()
         cosine_similarities = cosine_similarities.masked_fill(mask, 0)
 
-        # Compute the sum of off-diagonal elements (D)
+        # Compute the sum of off-diagonal elements (D) 
         disentanglement_offset = torch.sum(cosine_similarities, dim=1, keepdim=True)  # Shape: (batch_size, 1)
 
         # Scale the disentanglement offset with beta_step
