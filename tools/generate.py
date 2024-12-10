@@ -94,6 +94,8 @@ class Generator:
             self.model = self.Network(device=self.device, image_size=self.image_size, act=self.act).to(self.device)
             load_ckpt(ckpt_path=self.weight_path, model=self.model, device=self.device, is_train=False,
                       conditional=self.conditional)
+            
+        self.image_batch = self.args.image_batch
 
     def generate(self, index=0):
         """
@@ -124,6 +126,34 @@ class Generator:
             plot_images(images=x)
         logger.info(msg="Finish generation.")
 
+    def generate_batch(self, index=0):
+        """
+        Genetate batch images in case cuda out of memory
+        :param index: Image index
+        """
+        if self.conditional:
+            if self.class_name == -1:
+                y = torch.arange(self.num_classes).long().to(self.device)
+                self.num_images = self.num_classes
+            else:
+                y = torch.Tensor([self.class_name] * self.num_images).long().to(self.device)
+            x = self.diffusion.sample(model=self.model, n=self.num_images, labels=y, cfg_scale=self.cfg_scale)
+        else:
+            x = self.diffusion.sample(model=self.model, n=self.num_images)
+
+        # If deploy app is true, return the generate results
+        if self.deploy:
+            return x
+
+        if self.result_path == "" or self.result_path is None:
+            plot_images(images=x)
+        else:
+            save_name = f"{self.generate_name}_{index}"
+            # save_images(images=x, path=os.path.join(self.result_path, f"{save_name}.{self.image_format}"))
+            save_one_image_in_images(images=x, path=self.result_path, generate_name=save_name,
+                                     image_size=self.new_image_size, image_format=self.image_format)
+            plot_images(images=x)
+        logger.info(msg=f"Finish generation index = {index}.")
 
 def init_generate_args():
     # Generating model parameters
@@ -150,9 +180,9 @@ def init_generate_args():
     # If true, the pt file of the ema model will be used
     parser.add_argument("--use_ema", default=False, action="store_true")
     # Weight path (required)
-    parser.add_argument("--weight_path", type=str, default="/home/llb/Integrated-Design-Diffusion-Model/results/cifar_horse_1/ckpt_last.pt")
+    parser.add_argument("--weight_path", type=str, default="/home/llb/Integrated-Design-Diffusion-Model/results/cifar_horse_disentangle1/ckpt_last.pt")
     # Saving path (required)
-    parser.add_argument("--result_path", type=str, default="/home/llb/Integrated-Design-Diffusion-Model/results/cifar_horse_1/vis")
+    parser.add_argument("--result_path", type=str, default="/home/llb/Integrated-Design-Diffusion-Model/results/cifar_horse_disentangle1/vis")
     # Set the sample type (required)
     # If not set, the default is for 'ddpm'. You can set it to either 'ddpm', 'ddim' or 'plms'.
     # Option: ddpm/ddim/plms
@@ -192,6 +222,8 @@ def init_generate_args():
     # [Warn] Version <= 1.1.1 need to be equal to model's num classes, version > 1.1.1 can set whatever you want
     parser.add_argument("--num_classes", type=int, default=10)
 
+    parser.add_argument("--image_batch", type=int, default=157)
+    parser.add_argument("--batch_generate", default=False, action="store_true")
     return parser.parse_args()
 
 
@@ -199,7 +231,12 @@ if __name__ == "__main__":
     # Init generate args
     args = init_generate_args()
     # Get version banner
-    get_version_banner()
+    # get_version_banner()
     gen_model = Generator(gen_args=args, deploy=False)
-    for i in range(2):
-        gen_model.generate(index=i)
+    if args.batch_generate:
+        for i in range(args.image_batch):
+            gen_model.generate_batch(index=i)
+            logger.info(f'total image batch{args.image_batch}, current batch:{i}')
+    else:
+        for i in range(2):
+            gen_model.generate(index=i)

@@ -55,8 +55,8 @@ if __name__ == "__main__":
     #                              "/your/dataset/image/folder/or/stats/output/path"],
     #                     help="Paths to the generated images or to .npz statistic files")
     parser.add_argument("path", type=str, nargs="*",
-                        default=["/home/llb/Integrated-Design-Diffusion-Model/results/cifar_horse_1/vis/1733383171.1157386/",
-                                    "/home/llb/Integrated-Design-Diffusion-Model/datasets/cifar10_folder/train/horse/"],
+                        default=["/home/llb/Integrated-Design-Diffusion-Model/results/cifar_horse_disentangle1/vis/1733712735.9726424",
+                                    "/home/llb/Integrated-Design-Diffusion-Model/datasets/cifar10_folder/train/horse"],
                         help="Paths to the generated images or to .npz statistic files")
     # Batch size
     parser.add_argument("--batch_size", type=int, default=16,
